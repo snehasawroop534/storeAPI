@@ -1,23 +1,26 @@
-const mysql = require("mysql2");
-
-// Normal createConnection (same as your code)
-const connection = mysql.createConnection({
+const mysql = require("mysql2/promise");
+const poolConfig = {
     host: "217.21.87.103",
-    database: "u205680228_wearzy",
+    user: "u205680228_sneha",
     password: "Sneha3306",
-    user: "u205680228_sneha"
-});
+    database: "u205680228_wearzy",
+    port: process.env.DB_PORT,
+    waitForConnections: true, // If connections are maxed out, queue new requests
+    connectionLimit: 10,     // Max number of simultaneous connections (adjust as needed)
+    queueLimit: 0,           // No limit on the queue for waiting requests
+    connectTimeout: 20000, 
+    acquireTimeout: 20000 
+};
 
-// Connect as usual
-connection.connect(error => {
-    if (error) {
-        console.log("Database connection error " + error);
-    } else {
-        console.log("Database connected");
-    }
-});
+const db = mysql.createPool(poolConfig);
 
-// ⬇️ Add promise wrapper here (IMPORTANT)
-const db = connection.promise();
+db.getConnection()
+    .then(connection => {
+        console.log("Database connected and pool ready.");
+        connection.release(); // Release the test connection back to the pool
+    })
+    .catch(error => {
+        console.error("Database connection error (Please check config/credentials):", error.message);
+    });
 
 module.exports = db;

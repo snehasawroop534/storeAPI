@@ -1216,8 +1216,8 @@ app.post("/api/auth/reset-password", async (request, response) => {
 
 
 
-app.listen(4005, (error)=>{
+app.listen(4006, (error)=>{
     if(error) console.log("Error "+ error);
-    console.log("Server is running on port 4005");
+    console.log("Server is running on port 4006");
 })
 
