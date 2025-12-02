@@ -1057,7 +1057,7 @@ app.get("/api/user", async (request, response) => {
 });
 
 
-// get user only one profile
+// get single user profile
 
 app.get("/api/user/profile",(request, response)=>{
     const token = request.headers.authorization;
