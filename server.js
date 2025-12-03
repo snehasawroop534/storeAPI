@@ -1059,28 +1059,26 @@ app.get("/api/user", async (request, response) => {
 
 // get single user profile
 
-app.get("/api/user/profile", async (req, res) => {
-    const authHeader = req.headers.authorization;
-    const ACCESS_SECRET = "ACCESS_SECRET_KEY";
+app.get("/api/user/profile", (request, response) => {
 
-    if (!authHeader) {
-        return res.status(400).json({ message: "Token missing" });
+    const token = request.headers.authorization;
+    const ACCESS_SECRET = "ACCESS_SECRET_KEY"; // SAME SECRET USED IN LOGIN
+
+    if(!token){
+        return response.status(400).json({message: "Token missing"});
     }
 
-    const token = authHeader.split(" ")[1];
-
-    jwt.verify(token, ACCESS_SECRET, async (error, decoded) => {
+    jwt.verify(token, ACCESS_SECRET, (error, result) => {
         if (error) {
-            return res.status(401).json({ message: "Unauthorized" });
+            return response.status(401).json({message: "Unauthorized"});
+        } else {
+            return response.status(200).json({
+                profile: result,
+                name: result.name   // 👈 JUST THIS LINE ADDED
+            });
         }
-
-        const [result] = await db.query(
-            "SELECT userId, name, email FROM users WHERE userId = ?",
-            [decoded.userId]
-        );
-
-        res.status(200).json({ profile: result[0] });
     });
+
 });
 
 
