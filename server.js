@@ -921,7 +921,7 @@ app.post("/api/user/login", async (request, response) => {
 
         // Generate Access Token
         const accessToken = jwt.sign(
-            { userId: user.userId, email: user.email },
+            { userId: user.userId, email: user.email, name: user.name },
             ACCESS_SECRET,
             { expiresIn: "15m" }
         );
