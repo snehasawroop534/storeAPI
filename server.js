@@ -951,6 +951,64 @@ app.post("/api/user/login", async (request, response) => {
     }
 });
 
+app.post("/api/user/login/new", async (req, res) => {
+    const { email, password } = req.body;
+    const ACCESS_SECRET = "ACCESS_SECRET_KEY";
+    const REFRESH_SECRET = "REFRESH_SECRET_KEY";
+
+    try {
+        const [result] = await db.query("SELECT * FROM users WHERE email=?", [email]);
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        const user = result[0];
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        // Access Token (1 hour)
+        const accessToken = jwt.sign(
+            { id: user.id },
+            secretKey,
+            { expiresIn: "1h" }
+        );
+
+        // Refresh Token (30 days)
+        const refreshToken = jwt.sign(
+            { id: user.id },
+            refreshSecret,
+            { expiresIn: "30d" }
+        );
+
+        // Save refresh token in DB
+        await db.query("INSERT INTO refresh_tokens (user_id, token) VALUES (?, ?)", [
+            user.id,
+            refreshToken
+        ]);
+
+       res.json({
+          message: "Login successful",
+          user: {
+             id: user.id,
+             name: user.name,
+             username: user.username,
+             email: user.email
+            },
+         accessToken,
+         refreshToken
+       });
+
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
 
 //refresh token
 
@@ -1085,9 +1143,6 @@ app.get("/api/user/profile", (request, response) => {
     });
 
 });
-
-
-
 
 // user update pofile 
 
