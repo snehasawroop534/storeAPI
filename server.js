@@ -890,7 +890,7 @@ app.post("/api/user/register", async (request, response) => {
 
 
 // user login
-
+// user login
 app.post("/api/user/login", async (request, response) => {
     const email = request.body.email;
     const password = request.body.password;
@@ -919,21 +919,18 @@ app.post("/api/user/login", async (request, response) => {
             });
         }
 
-        // Generate Access Token
         const accessToken = jwt.sign(
             { userId: user.userId, email: user.email, name: user.name },
             ACCESS_SECRET,
             { expiresIn: "15m" }
         );
 
-        // Generate Refresh Token
         const refreshToken = jwt.sign(
             { userId: user.userId, email: user.email },
             REFRESH_SECRET,
             { expiresIn: "7d" }
         );
 
-        // Save refresh token in database
         await db.query(
             "INSERT INTO refresh_tokens (userId, token) VALUES (?, ?)",
             [user.userId, refreshToken]
@@ -941,6 +938,7 @@ app.post("/api/user/login", async (request, response) => {
 
         response.status(200).json({
             message: "Login successful",
+            userId: user.userId,     // ⭐ JUST THIS ONE LINE ADDED
             accessToken: accessToken,
             refreshToken: refreshToken
         });
@@ -950,65 +948,6 @@ app.post("/api/user/login", async (request, response) => {
         response.status(500).json({ message: "Internal server error" });
     }
 });
-
-app.post("/api/user/login/new", async (req, res) => {
-    const { email, password } = req.body;
-    const ACCESS_SECRET = "ACCESS_SECRET_KEY";
-    const REFRESH_SECRET = "REFRESH_SECRET_KEY";
-
-    try {
-        const [result] = await db.query("SELECT * FROM users WHERE email=?", [email]);
-
-        if (result.length === 0) {
-            return res.status(401).json({ message: "Invalid email or password" });
-        }
-
-        const user = result[0];
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: "Invalid email or password" });
-        }
-
-        // Access Token (1 hour)
-        const accessToken = jwt.sign(
-            { id: user.id },
-            secretKey,
-            { expiresIn: "1h" }
-        );
-
-        // Refresh Token (30 days)
-        const refreshToken = jwt.sign(
-            { id: user.id },
-            refreshSecret,
-            { expiresIn: "30d" }
-        );
-
-        // Save refresh token in DB
-        await db.query("INSERT INTO refresh_tokens (user_id, token) VALUES (?, ?)", [
-            user.id,
-            refreshToken
-        ]);
-
-       res.json({
-          message: "Login successful",
-          user: {
-             id: user.id,
-             name: user.name,
-             username: user.username,
-             email: user.email
-            },
-         accessToken,
-         refreshToken
-       });
-
-
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "Internal server error" });
-    }
-});
-
 
 //refresh token
 
