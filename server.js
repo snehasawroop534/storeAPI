@@ -236,23 +236,7 @@ app.post("/api/cart/add", async (request, response) => {
     }
 });
 
-// get  cart 
 
-// app.get("/api/cart/:userId", async (request, response) => {
-//     const userId = request.params.userId;
-
-//     try {
-//         const [result] = await db.query("SELECT * FROM cart WHERE userId = ?", [
-//             userId,
-//         ]);
-
-//         response.status(200).json(result);
-
-//     } catch (error) {
-//         console.error("Error fetching cart:", error);
-//         response.status(500).json({ message: "Internal server error" });
-//     }
-// });
 
 
 
@@ -290,10 +274,8 @@ app.get("/api/cart/:userId", async (request, response) => {
             cartId: item.cartId,
             userId: item.userId,
             productId: item.productId,
-            size: item.size,
-            quantity: item.quantity,
-            price: item.price,
-
+            
+        
             product: {
                 title: item.product_title,
                 brand: item.product_brand,
