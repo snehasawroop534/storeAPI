@@ -355,7 +355,7 @@ app.delete("/api/cart/:id", async (request, response) => {
 
         const sql = `
             DELETE FROM cart
-            WHERE id = ?
+            WHERE cartId = ?
         `;
 
         const [result] = await db.query(sql, [cartId]);
