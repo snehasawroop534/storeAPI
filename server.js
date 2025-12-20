@@ -825,7 +825,6 @@ app.delete("/api/address/:id", async (request, response) => {
             "DELETE FROM address WHERE id=?",
             [addressId]
         );
-
         if (result.affectedRows === 0) {
             return response.status(404).json({
                 message: "Address not found",
@@ -845,12 +844,10 @@ app.delete("/api/address/:id", async (request, response) => {
 });
 
 
-// Payment Apis
 
 
 
-
-// Create Payment order (POST)
+// Create Payment order (POST) online
 
 app.post("/api/payment/create", async (request, response) => {
     const { userId, amount } = request.body;
@@ -891,7 +888,7 @@ app.post("/api/payment/create", async (request, response) => {
 
 
 
-// Payment Callback (POST)
+// Payment Callback (POST) online
 
 // const crypto = require("crypto");
 
@@ -1222,9 +1219,7 @@ app.put("/api/user/profile/update/:userId", async (request, response) => {
 });
 
 
-// SEND OTP
 
-// import crypto from "crypto";
 
 app.post("/api/auth/send-otp", async (request, response) => {
     const email = request.body.email;
@@ -1321,6 +1316,38 @@ app.post("/api/auth/reset-password", async (request, response) => {
     }
 });
 
+
+// POST rating
+
+app.post("/api/rating/add", async (req, res) => {
+  const { userId, orderId, productId, rating, review } = req.body;
+
+  if (!rating) {
+    return res.status(400).json({ message: "Rating required" });
+  }
+
+  await db.query(
+    "INSERT INTO product_reviews (user_id, order_id, product_id, rating, review) VALUES (?,?,?,?,?)",
+    [userId, orderId, productId, rating, review]
+  );
+
+  res.json({ message: "Rating added successfully" });
+});
+
+
+
+// GET rating
+
+app.get("/api/rating/:orderId/:productId", async (req, res) => {
+  const { orderId, productId } = req.params;
+
+  const [rows] = await db.query(
+    "SELECT * FROM product_reviews WHERE order_id=? AND product_id=?",
+    [orderId, productId]
+  );
+
+  res.json(rows);
+});
 
 
 
