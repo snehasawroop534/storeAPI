@@ -41,35 +41,35 @@ app.post("/api/products/add", upload.single("productimg"), async (req, res) => {
         return res.status(400).json({ message: "Please upload product image" });
     }
 
-    const { title, brand, mrp, discountedPrice, description } = req.body;
+    const {
+        title,
+        brand,
+        mrp,
+        discountedPrice,
+        description,
+        category_id
+    } = req.body;
+
     const filename = req.file.filename;
 
     try {
         const [result] = await db.query(
             `INSERT INTO products 
-            (title, brand, mrp, discountedPrice, description, image)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-            [title, brand, mrp, discountedPrice, description, filename]
+            (title, brand, mrp, discountedPrice, description, image, category_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [title, brand, mrp, discountedPrice, description, filename, category_id]
         );
 
         res.status(201).json({
             message: "Product added successfully",
-            product: {
-                productId: result.insertId,
-                title,
-                brand,
-                mrp,
-                discountedPrice,
-                description,
-                image: filename
-            }
+            productId: result.insertId
         });
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Server internal error"+ error });
+        res.status(500).json({ message: "Server error", error });
     }
 });
+
 
 
 // get all products
@@ -154,16 +154,22 @@ app.get("/api/products/search/st", async (request, response) => {
 // get categories 
 
 
-app.get("/api/categories", async (request, response) => {
+app.get("/api/categories/:id/products", async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const [result] = await db.query("SELECT * FROM categories");
-        response.status(200).json(result);
+        const [products] = await db.query(
+            "SELECT * FROM products WHERE category_id = ?",
+            [id]
+        );
+
+        res.status(200).json(products);
 
     } catch (error) {
-        console.error("Error fetching categories:", error);
-        response.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Server error" });
     }
 });
+
 
 
 
@@ -189,6 +195,65 @@ app.post("/api/categories/add", async (request, response) => {
         response.status(500).json({ message: "Internal server error" });
     }
 });
+
+
+
+//get category table
+
+app.get("/api/categories", async (req, res) => {
+  try {
+    const [categories] = await db.query("SELECT * FROM categories");
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+
+
+
+// DELETE CATEGORY
+
+app.delete("/api/categories/:id", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // check category exists
+        const [category] = await db.query(
+            "SELECT * FROM categories WHERE id = ?",
+            [id]
+        );
+
+        if (category.length === 0) {
+            return res.status(404).json({
+                message: "Category not found",
+            });
+        }
+
+        // delete category
+        await db.query(
+            "DELETE FROM categories WHERE id = ?",
+            [id]
+        );
+
+        res.status(200).json({
+            message: "Category deleted successfully",
+            categoryId: id,
+        });
+
+    } catch (error) {
+        console.error("Delete category error:", error);
+        res.status(500).json({
+            message: "Internal server error",
+        });
+    }
+});
+
+
+
+
+
 
 // get filters
 
