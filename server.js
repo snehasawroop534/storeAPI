@@ -1354,7 +1354,7 @@ app.get("/api/rating/:orderId/:productId", async (req, res) => {
 
 const PORT = process.env.PORT || 4006;
 
-app.listen(PORT, (error)=>{
+app.listen(PORT,'0.0.0.0', (error)=>{
     if(error) console.log("Error "+ error);
     console.log("Server is running on port "+PORT);
 })
