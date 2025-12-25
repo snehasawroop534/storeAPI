@@ -6,6 +6,8 @@ const bcrypt = require("bcrypt");
 const path = require("path");
 const { error } = require("console");
 const crypto = require("crypto");
+require("dotenv").config();
+
 const app = express();
 
 const Razorpay = require("razorpay");
@@ -1350,9 +1352,10 @@ app.get("/api/rating/:orderId/:productId", async (req, res) => {
 });
 
 
+const PORT = process.env.PORT || 4006;
 
-app.listen(4006, (error)=>{
+app.listen(PORT, (error)=>{
     if(error) console.log("Error "+ error);
-    console.log("Server is running on port 4006");
+    console.log("Server is running on port "+PORT);
 })
 
