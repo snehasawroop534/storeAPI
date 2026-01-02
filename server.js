@@ -152,7 +152,7 @@ app.get("/api/products", async (request, response) => {
     }
 });
 
-// get all products by id 
+// get all products by its id 
 
 app.get("/api/products/:id", async (request, response) => {
     const productId = request.params.id;
